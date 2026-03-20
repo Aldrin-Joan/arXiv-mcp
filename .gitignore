@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# PyPack
+pip-wheel-metadata/
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# System
+.DS_Store
+Thumbs.db
+
+# MCP / user-specific settings
+C:\\Users\\**\\AppData\\Roaming\\Code\\User\\mcp.json
+
+# Local download cache
+downloads/
+**/downloads/
+
+# Python Environment files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# other
+*.bak
+*.swp

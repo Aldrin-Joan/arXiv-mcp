@@ -243,26 +243,30 @@ python tests/test_smoke.py
 arxiv-mcp/
 ├── src/
 │   ├── __init__.py
-│   ├── models.py              # Pydantic models + config
-│   ├── logger.py              # Structured logging
+│   ├── console.py            # CLI entrypoint module
+│   ├── models.py             # Pydantic models + config
+│   ├── logger.py             # Structured logging
 │   ├── arxiv_client/
-│   │   └── __init__.py        # arXiv API wrapper
+│   │   └── __init__.py       # arXiv API wrapper
 │   ├── pdf_fetcher/
-│   │   └── __init__.py        # PDF downloader
+│   │   └── __init__.py       # PDF downloader
 │   ├── pdf_parser/
-│   │   └── __init__.py        # PDF text extractor
+│   │   └── __init__.py       # PDF text extractor
 │   ├── context_builder/
-│   │   └── __init__.py        # LLM context packager
+│   │   └── __init__.py       # LLM context packager
 │   └── mcp_server/
-│       ├── __init__.py        # MCP server + tool handlers
-│       └── __main__.py        # python -m entry point
+│       ├── __init__.py       # MCP server + tool handlers
+│       └── __main__.py       # python -m entry point
 ├── tests/
-│   └── test_smoke.py          # Smoke test suite
-├── downloads/                 # PDF cache (auto-created)
-├── .env.example               # Environment template
-├── mcp.json                   # MCP client configuration
-├── requirements.txt           # Python dependencies
-└── README.md                  # This file
+│   └── test_smoke.py         # Smoke test suite
+├── downloads/                # PDF cache (auto-created) unless ARXIV_DOWNLOAD_DIR set
+├── .vscode/mcp.json          # workspace MCP config
+├── pyproject.toml            # package metadata and CLI entrypoint
+├── Dockerfile                # containerized server deployment
+├── .env.example              # Environment template
+├── mcp.json                  # MCP client configuration
+├── requirements.txt          # Python dependencies
+└── README.md                 # This file
 ```
 
 ---
