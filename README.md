@@ -1,6 +1,6 @@
 # arXiv MCP (Model Context Protocol)
 
-[![PyPI version](https://img.shields.io/pypi/v/arxiv-mcp-aj)](https://pypi.org/project/arxiv-mcp-aj/) [![Python versions](https://img.shields.io/pypi/pyversions/arxiv-mcp-aj)](https://pypi.org/project/arxiv-mcp-aj/) [![License](https://img.shields.io/pypi/l/arxiv-mcp-aj)](https://pypi.org/project/arxiv-mcp-aj/)
+[![PyPI version](https://img.shields.io/pypi/v/paperstack)](https://pypi.org/project/paperstack/) [![Python versions](https://img.shields.io/pypi/pyversions/paperstack)](https://pypi.org/project/paperstack/) [![License](https://img.shields.io/pypi/l/paperstack)](https://pypi.org/project/paperstack/)
 
 ## Overview
 
@@ -74,7 +74,7 @@ pip install -e .
 From PyPI:
 
 ```bash
-pip install arxiv-mcp-aj
+pip install paperstack
 ```
 
 ---

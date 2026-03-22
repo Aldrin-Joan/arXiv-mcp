@@ -1,5 +1,5 @@
 [project]
-name = "arxiv-mcp-aj"
+name = "paperstack"
 version = "0.1.4"
 description = "Model Context Protocol server for arXiv PDF retrieval and LLM context generation."
 readme = "README.md"
