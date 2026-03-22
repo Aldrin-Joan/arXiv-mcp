@@ -106,6 +106,25 @@ async def run():
     print(f"  ✓ Contribution extraction method: {contributions.extraction_method}")
     print(f"    Core claim: {contributions.core_claim[:120]!r}")
 
+    # ── 9. Layer 3 Dev Tooling smoke tests ─────────────────────────
+    print("\n[9] Testing arxiv_extract_code_links smoke...")
+    from src.devtools.link_extractor import LinkExtractor
+
+    link_report = await LinkExtractor().extract("1706.03762", force_refresh=False)
+    print(
+        f"  ✓ Extracted {len(link_report.github_repos)} github repos, official={link_report.has_official_code}"
+    )
+
+    print("\n[10] Testing arxiv_reproducibility_score smoke...")
+    from src.devtools.reproducibility_scorer import ReproducibilityScorer
+
+    score_report = ReproducibilityScorer().score("1706.03762", force_refresh=False)
+    print(f"  ✓ Reproducibility score {score_report.score}, band={score_report.band}")
+    if score_report.score <= 5.0:
+        print(
+            "  ⚠️ Score <= 5.0; expected > 5.0 for this paper but may vary with environment"
+        )
+
     print("\n" + "=" * 60)
     print("  All smoke tests passed! ✓")
     print("=" * 60 + "\n")

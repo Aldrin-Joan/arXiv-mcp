@@ -125,6 +125,9 @@ print(context.summary)
 - `arxiv_extract_contributions` (structured contribution extractor)
 - `arxiv_semantic_index` (semantic similarity index builder/query)
 - `arxiv_compare_papers` (paper comparison report)
+- `arxiv_extract_code_links` (discover official GitHub/HuggingFace/Kaggle links from a paper)
+- `arxiv_reproducibility_score` (reproducibility heuristic score with evidence details)
+- `arxiv_diff_implementations` (compare paper method claims against a GitHub implementation)
 
 Use any MCP-capable client (VS Code MCP extension, custom agent SDK) to connect.
 
@@ -192,6 +195,12 @@ Environment variables:
 - `CITATION_CACHE_TTL` (default: `86400` seconds / 24 hours)
 - `CONTRIBUTION_CACHE_TTL` (default: `604800` seconds / 7 days)
 - `EMBEDDING_MODEL` (default: `sentence-transformers/all-MiniLM-L6-v2`)
+- `GITHUB_TOKEN` (optional; for GitHub API auth, improves 60 -> 5000 req/hour)
+- `LINK_CACHE_TTL` (default: `172800` seconds / 48 hours)
+- `REPRO_CACHE_TTL` (default: `604800` seconds / 7 days)
+- `DIFF_CACHE_TTL` (default: `86400` seconds / 24 hours)
+- `GITHUB_MAX_FILES` (default: `20`)
+- `GITHUB_MAX_FILE_SIZE_KB` (default: `50`)
 
 Set in shell or via `.env` before running.
 

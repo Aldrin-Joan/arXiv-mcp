@@ -36,7 +36,13 @@ Root code lives in `src/`:
 - `src/intelligence/contribution_extractor.py`: extracts contributions using heuristic rules and Ollama LLM fallback.
 - `src/intelligence/semantic_index.py`: builds / queries semantic vector index using sentence-transformers and optional ChromaDB.
 - `src/intelligence/paper_comparator.py`: compares two paper contexts on contributions, citation metrics, and similarity.
-- `src/mcp_server/__init__.py`: exposes new MCP tools `arxiv_citation_graph`, `arxiv_extract_contributions`, `arxiv_semantic_index`, `arxiv_compare_papers`.
+- `src/mcp_server/__init__.py`: exposes new MCP tools `arxiv_citation_graph`, `arxiv_extract_contributions`, `arxiv_semantic_index`, `arxiv_compare_papers`, plus new Layer 3 tools `arxiv_extract_code_links`, `arxiv_reproducibility_score`, `arxiv_diff_implementations`.
+
+### Layer 3 Devtools
+- `src/devtools/link_extractor.py`: multi-source code/dataset/model link extraction from PapersWithCode, arXiv abstract page, and PDF content; link normalization, classification, and caching.
+- `src/devtools/reproducibility_scorer.py`: deterministic reproducibility scoring based on link signals, hyperparameters, ablation, seeds, compute environment and license.
+- `src/devtools/implementation_differ.py`: GitHub repository analysis and method-vs-code divergence report full pipeline.
+- `src/devtools/prompts/diff.txt`: LLM prompt template used for implementation fidelity analysis.
 
 Supporting files in root:
 

@@ -31,6 +31,9 @@ from src.pdf_parser import PDFParser
 from src.context_builder import ContextBuilder
 from src.logger import get_logger, configure_logging
 from src.models import KEEP_PDFS
+from src.devtools.link_extractor import LinkExtractor
+from src.devtools.reproducibility_scorer import ReproducibilityScorer
+from src.devtools.implementation_differ import ImplementationDiffer
 from src.intelligence.citation_graph import SemanticScholarClient
 from src.intelligence.contribution_extractor import ContributionExtractor
 from src.intelligence.paper_comparator import PaperComparator
@@ -214,6 +217,43 @@ async def list_tools() -> list[types.Tool]:
                 ],
             },
         ),
+        types.Tool(
+            name="arxiv_extract_code_links",
+            description="Find all code repositories, datasets, models, and project pages linked to a paper.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "arxiv_id": {"type": "string"},
+                    "force_refresh": {"type": "boolean", "default": False},
+                },
+                "required": ["arxiv_id"],
+            },
+        ),
+        types.Tool(
+            name="arxiv_reproducibility_score",
+            description="Score paper reproducibility based on code, data, and experiments.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "arxiv_id": {"type": "string"},
+                    "force_refresh": {"type": "boolean", "default": False},
+                },
+                "required": ["arxiv_id"],
+            },
+        ),
+        types.Tool(
+            name="arxiv_diff_implementations",
+            description="Compare paper method against GitHub repo implementation and report divergences.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "arxiv_id": {"type": "string"},
+                    "github_url": {"type": "string"},
+                    "force_refresh": {"type": "boolean", "default": False},
+                },
+                "required": ["arxiv_id", "github_url"],
+            },
+        ),
     ]
 
 
@@ -243,6 +283,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[types.TextCont
             return await _handle_compare_papers(arguments)
         elif name == "arxiv_find_related":
             return await _handle_find_related(arguments)
+        elif name == "arxiv_extract_code_links":
+            return await _handle_extract_code_links(arguments)
+        elif name == "arxiv_reproducibility_score":
+            return await _handle_reproducibility_score(arguments)
+        elif name == "arxiv_diff_implementations":
+            return await _handle_diff_implementations(arguments)
         else:
             raise ValueError(f"Unknown tool: {name}")
 
@@ -268,7 +314,7 @@ async def _handle_citation_graph(args: dict[str, Any]) -> list[types.TextContent
             influential_only=bool(args.get("influential_only", False)),
         )
 
-    return [types.TextContent(type="text", text=json.dumps(graph.model_dump(), indent=2))]
+    return [types.TextContent(type="text", text=json.dumps(graph.model_dump(), indent=2, default=str))]
 
 
 async def _handle_extract_contributions(args: dict[str, Any]) -> list[types.TextContent]:
@@ -280,6 +326,43 @@ async def _handle_extract_contributions(args: dict[str, Any]) -> list[types.Text
     contributions = await extractor.extract(arxiv_id, force_refresh=bool(args.get("force_refresh", False)))
 
     return [types.TextContent(type="text", text=json.dumps(contributions.model_dump(), indent=2))]
+
+
+async def _handle_extract_code_links(args: dict[str, Any]) -> list[types.TextContent]:
+    arxiv_id = args.get("arxiv_id", "").strip()
+    if not arxiv_id:
+        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+
+    extractor = LinkExtractor()
+    code_links = await extractor.extract(arxiv_id, force_refresh=bool(args.get("force_refresh", False)))
+
+    return [types.TextContent(type="text", text=json.dumps(code_links.model_dump(), indent=2, default=str))]
+
+
+async def _handle_reproducibility_score(args: dict[str, Any]) -> list[types.TextContent]:
+    arxiv_id = args.get("arxiv_id", "").strip()
+    if not arxiv_id:
+        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+
+    scorer = ReproducibilityScorer()
+    report = scorer.score(arxiv_id, force_refresh=bool(args.get("force_refresh", False)))
+
+    return [types.TextContent(type="text", text=json.dumps(report.model_dump(), indent=2, default=str))]
+
+
+async def _handle_diff_implementations(args: dict[str, Any]) -> list[types.TextContent]:
+    arxiv_id = args.get("arxiv_id", "").strip()
+    github_url = args.get("github_url", "").strip()
+
+    if not arxiv_id:
+        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+    if not github_url:
+        return [types.TextContent(type="text", text=json.dumps({"error": "github_url required"}))]
+
+    differ = ImplementationDiffer()
+    diff = differ.diff(arxiv_id, github_url, force_refresh=bool(args.get("force_refresh", False)))
+
+    return [types.TextContent(type="text", text=json.dumps(diff.model_dump(), indent=2, default=str))]
 
 
 async def _handle_compare_papers(args: dict[str, Any]) -> list[types.TextContent]:
@@ -295,7 +378,7 @@ async def _handle_compare_papers(args: dict[str, Any]) -> list[types.TextContent
     except Exception as exc:
         return [types.TextContent(type="text", text=json.dumps({"error": str(exc)}))]
 
-    return [types.TextContent(type="text", text=json.dumps(report.model_dump(), indent=2))]
+    return [types.TextContent(type="text", text=json.dumps(report.model_dump(), indent=2, default=str))]
 
 
 async def _handle_find_related(args: dict[str, Any]) -> list[types.TextContent]:
@@ -316,7 +399,7 @@ async def _handle_find_related(args: dict[str, Any]) -> list[types.TextContent]:
     except Exception as exc:
         return [types.TextContent(type="text", text=json.dumps({"error": str(exc)}))]
 
-    return [types.TextContent(type="text", text=json.dumps(results.model_dump(), indent=2))]
+    return [types.TextContent(type="text", text=json.dumps(results.model_dump(), indent=2, default=str))]
 
 
 async def _handle_search_arxiv(args: dict) -> list[types.TextContent]:

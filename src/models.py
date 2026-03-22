@@ -6,8 +6,9 @@ from __future__ import annotations
 
 import os
 import tempfile
+from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -167,6 +168,87 @@ class PaperContributions(BaseModel):
     extracted_at: str
 
 
+class CodeLink(BaseModel):
+    """A single extracted code or dataset link with classification metadata."""
+
+    url: str
+    link_type: Literal[
+        "github_repo",
+        "huggingface_model",
+        "huggingface_dataset",
+        "kaggle_dataset",
+        "project_page",
+        "demo",
+        "other",
+    ]
+    source: Literal[
+        "paperswithcode",
+        "arxiv_page",
+        "pdf_text",
+        "pdf_hyperlink",
+    ]
+    confidence: float
+
+
+class CodeLinks(BaseModel):
+    """Collection of classified source links for an arXiv paper."""
+
+    arxiv_id: str
+    github_repos: list[CodeLink]
+    huggingface_links: list[CodeLink]
+    dataset_links: list[CodeLink]
+    project_pages: list[CodeLink]
+    other_links: list[CodeLink]
+    has_official_code: bool
+    fetched_at: datetime
+
+
+class ReproducibilitySignal(BaseModel):
+    """Single heuristic signal for reproducibility scoring."""
+
+    name: str
+    points_awarded: float
+    points_possible: float
+    detected: bool
+    evidence: str
+
+
+class ReproducibilityReport(BaseModel):
+    """The reproducibility score report for an arXiv paper."""
+
+    arxiv_id: str
+    score: float
+    band: str
+    signals: list[ReproducibilitySignal]
+    code_links: CodeLinks
+    scored_at: datetime
+
+
+class Divergence(BaseModel):
+    """Divergence between paper claims and implementation."""
+
+    paper_says: str
+    code_does: str
+    location: str
+    severity: Literal["minor", "moderate", "critical"]
+
+
+class ImplementationDiff(BaseModel):
+    """Comparison report between paper and code."""
+
+    arxiv_id: str
+    github_url: str
+    paper_title: str
+    divergences: list[Divergence]
+    faithful_implementations: list[str]
+    missing_implementations: list[str]
+    overall_fidelity: Literal["high", "medium", "low"]
+    summary: str
+    code_files_analyzed: list[str]
+    total_code_tokens: int
+    diffed_at: datetime
+
+
 class PaperDimension(BaseModel):
     """Dimension detail for paper comparison."""
 
@@ -214,4 +296,12 @@ SEMANTIC_INDEX_DIR: Path = Path(os.getenv("SEMANTIC_INDEX_DIR", str(DOWNLOAD_DIR
 CITATION_CACHE_TTL: int = int(os.getenv("CITATION_CACHE_TTL", str(86400)))  # 24h in seconds
 CONTRIBUTION_CACHE_TTL: int = int(os.getenv("CONTRIBUTION_CACHE_TTL", str(604800)))  # 7d
 EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+
+# Layer 3 environment variables
+GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
+LINK_CACHE_TTL: int = int(os.getenv("LINK_CACHE_TTL", str(48 * 3600)))  # seconds
+REPRO_CACHE_TTL: int = int(os.getenv("REPRO_CACHE_TTL", str(7 * 24 * 3600)))  # seconds
+DIFF_CACHE_TTL: int = int(os.getenv("DIFF_CACHE_TTL", str(24 * 3600)))  # seconds
+GITHUB_MAX_FILES: int = int(os.getenv("GITHUB_MAX_FILES", "25"))
+GITHUB_MAX_FILE_SIZE_KB: int = int(os.getenv("GITHUB_MAX_FILE_SIZE_KB", "50"))
 

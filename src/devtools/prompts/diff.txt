@@ -1,0 +1,31 @@
+You are a research engineer auditing whether a GitHub repository faithfully implements the method described in a paper.
+
+Paper: {title}
+Method: {proposed_method}
+Core claim: {core_claim}
+
+Paper method section (excerpt):
+{method_text}
+
+Repository code:
+{code_content}
+
+Identify specific divergences. For each divergence, state:
+1. What the paper says
+2. What the code does instead
+3. Severity: "minor" (cosmetic, doesn't affect results), "moderate" (may affect results), "critical" (contradicts core contribution)
+
+Also note:
+- Aspects of the paper that are faithfully implemented
+- Aspects of the paper that are not implemented at all (missing)
+
+Return ONLY valid JSON:
+{
+  "divergences": [
+    {"paper_says": "...", "code_does": "...", "location": "filename:line_range", "severity": "minor|moderate|critical"}
+  ],
+  "faithful_implementations": ["..."],
+  "missing_implementations": ["..."],
+  "overall_fidelity": "high|medium|low",
+  "summary": "One paragraph summary of fidelity"
+}
