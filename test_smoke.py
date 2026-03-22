@@ -6,6 +6,7 @@ Run from project root: python tests/test_smoke.py
 import asyncio
 import sys
 import os
+import json
 
 # Ensure project root is on the path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -124,7 +125,89 @@ async def run():
         print(
             "  ⚠️ Score <= 5.0; expected > 5.0 for this paper but may vary with environment"
         )
+    # ── 11. Layer 4 workspaces smoke tests ─────────────────────────
+    print("\n[11] Testing Layer 4 workflow smoke tests...")
+    from src.workflows.db import DatabaseClient
+    from src.workflows.reading_list import ReadingListManager
+    from src.workflows.topic_watcher import TopicWatcher
+    from src.workflows.explainer import Explainer
+    from src.models import Author, PaperMetadata, PaperContributions
 
+    class DummyArxivClientForReading:
+        async def get_by_id(self, arxiv_id: str):
+            return PaperMetadata(
+                arxiv_id=arxiv_id,
+                title="Test",
+                authors=[Author(name="A")],
+                abstract="Abstract",
+                categories=["cs.AI"],
+                primary_category="cs.AI",
+                published="2024-01-01T00:00:00Z",
+                updated="2024-01-02T00:00:00Z",
+                pdf_url="https://arxiv.org/pdf/1706.03762.pdf",
+                entry_url="https://arxiv.org/abs/1706.03762",
+            )
+
+        async def search(self, query: str, max_results: int = 50):
+            class Paper:
+                def __init__(self, arxiv_id):
+                    self.arxiv_id = arxiv_id
+
+            return [Paper("id1"), Paper("id2")]
+
+    class DummyContributionExtractor:
+        async def extract(self, arxiv_id: str, force_refresh: bool = False):
+            return PaperContributions(
+                arxiv_id=arxiv_id,
+                core_claim="core",
+                proposed_method="method",
+                key_results=["r1"],
+                baselines_compared=[],
+                limitations=[],
+                datasets_used=[],
+                task_domain="NLP",
+                novelty_type="empirical",
+                extraction_method="heuristic",
+                extracted_at="2026-01-01T00:00:00Z",
+            )
+
+    db2 = DatabaseClient(":memory:")
+    rl_mgr = ReadingListManager(db2, DummyArxivClientForReading())
+    asyncio.run(rl_mgr.add("1706.03762", tags=["NLP"], notes="note"))
+    result_list = asyncio.run(rl_mgr.list())
+    assert len(result_list.entries) >= 1
+    asyncio.run(rl_mgr.update("1706.03762", read_status="read"))
+    stats = asyncio.run(rl_mgr.stats())
+    assert stats.stats["read"] == 1
+
+    tw = TopicWatcher(db2, DummyArxivClientForReading())
+    asyncio.run(tw.add("cat:cs.AI", "AI"))
+    check_res1 = asyncio.run(tw.check())
+    assert check_res1.check_results[0].baseline_established
+    check_res2 = asyncio.run(tw.check())
+    assert not check_res2.check_results[0].baseline_established
+
+    explainer = Explainer(
+        db2, DummyContributionExtractor(), DummyArxivClientForReading()
+    )
+
+    async def fake_ollama(prompt):
+        return json.dumps(
+            {
+                "what_it_is": "X",
+                "problem_solved": "Y",
+                "how_it_works": "Z",
+                "why_it_matters": "W",
+                "key_result": "K",
+                "reading_time_minutes": 2,
+            }
+        )
+
+    explainer._call_ollama = fake_ollama
+    explanation = asyncio.run(explainer.explain("1706.03762", "practitioner"))
+    assert explanation.generation_method in {"llm", "passthrough"}
+
+    print("  ✓ Layer 4 workflow smoke checks passed")
     print("\n" + "=" * 60)
     print("  All smoke tests passed! ✓")
     print("=" * 60 + "\n")

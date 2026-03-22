@@ -128,6 +128,9 @@ print(context.summary)
 - `arxiv_extract_code_links` (discover official GitHub/HuggingFace/Kaggle links from a paper)
 - `arxiv_reproducibility_score` (reproducibility heuristic score with evidence details)
 - `arxiv_diff_implementations` (compare paper method claims against a GitHub implementation)
+- `arxiv_reading_list` (persistent reading list CRUD and filters)
+- `arxiv_watch_topic` (watch query topics and detect new papers)
+- `arxiv_explain_for_audience` (audience-specific explanation synthesis)
 
 Use any MCP-capable client (VS Code MCP extension, custom agent SDK) to connect.
 
@@ -187,6 +190,7 @@ Environment variables:
 
 - `ARXIV_CACHE_DIR` (default: `./downloads`)
 - `ARXIV_CACHE_TTL` (default: `604800` seconds / 7 days)
+- `ARXIV_DB_PATH` (default: `${ARXIV_DOWNLOAD_DIR}/arxiv_mcp.db`) path to the SQLite workflow database
 - `ARXIV_RATE_LIMIT` (default: `1` request/sec)
 - `S2_API_KEY` (optional; Semantic Scholar API key for higher rate limits)
 - `OLLAMA_BASE_URL` (default: `http://localhost:11434`)

@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,6 +31,8 @@ def get_download_dir() -> Path:
 
 
 DOWNLOAD_DIR = get_download_dir()
+
+ARXIV_DB_PATH = os.getenv("ARXIV_DB_PATH", str(DOWNLOAD_DIR / "arxiv_mcp.db"))
 
 MAX_RESULTS_DEFAULT = int(os.getenv("ARXIV_MAX_RESULTS", "10"))
 CHUNK_SIZE_TOKENS = int(os.getenv("CHUNK_SIZE_TOKENS", "800"))
@@ -166,6 +168,65 @@ class PaperContributions(BaseModel):
     novelty_type: str
     extraction_method: str
     extracted_at: str
+
+
+class ReadingListEntry(BaseModel):
+    arxiv_id: str
+    title: str
+    authors: list[str]
+    year: Optional[int]
+    abstract: str
+    tags: list[str]
+    notes: str
+    read_status: Literal["unread", "reading", "read"]
+    added_at: datetime
+    updated_at: datetime
+
+
+class ReadingListResult(BaseModel):
+    action: str
+    entries: Optional[list[ReadingListEntry]] = None
+    entry: Optional[ReadingListEntry] = None
+    total_count: Optional[int] = None
+    stats: Optional[dict] = None
+    message: str
+
+
+class WatchedTopic(BaseModel):
+    id: int
+    query: str
+    label: str
+    last_checked: Optional[datetime]
+    check_count: int
+    created_at: datetime
+    new_papers_this_check: Optional[int] = None
+
+
+class TopicCheckResult(BaseModel):
+    topic: WatchedTopic
+    new_papers: list[PaperMetadata]
+    baseline_established: bool
+
+
+class WatcherResult(BaseModel):
+    action: str
+    topics: Optional[list[WatchedTopic]] = None
+    check_results: Optional[list[TopicCheckResult]] = None
+    message: str
+
+
+class ExplanationResult(BaseModel):
+    arxiv_id: str
+    title: str
+    audience: str
+    what_it_is: str
+    problem_solved: str
+    how_it_works: str
+    why_it_matters: str
+    key_result: str
+    reading_time_minutes: int
+    generation_method: Literal["llm", "passthrough"]
+    generated_at: datetime
 
 
 class CodeLink(BaseModel):

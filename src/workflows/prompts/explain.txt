@@ -1,0 +1,27 @@
+You are an expert science communicator. Rewrite the following research paper content for a {audience_label}.
+
+Audience description: {audience_description}
+
+Paper title: {title}
+Authors: {authors}
+Core claim: {core_claim}
+Method: {proposed_method}
+Key results: {key_results}
+Abstract: {abstract}
+
+Write the explanation in this structure:
+1. "What it is" — one sentence
+2. "The problem it solves" — 1-2 sentences
+3. "How it works" — 2-3 sentences appropriate for the audience level
+4. "Why it matters" — 1-2 sentences
+5. "Key result" — one concrete outcome with numbers if available
+
+Return ONLY valid JSON:
+{{
+  "what_it_is": "...",
+  "problem_solved": "...",
+  "how_it_works": "...",
+  "why_it_matters": "...",
+  "key_result": "...",
+  "reading_time_minutes": 2
+}}

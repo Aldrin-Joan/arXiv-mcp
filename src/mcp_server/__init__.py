@@ -15,6 +15,7 @@ Run with:
 # pragma: no cover
 from __future__ import annotations
 
+import atexit
 import asyncio
 import json
 import sys
@@ -30,9 +31,13 @@ from src.pdf_fetcher import PDFFetcher
 from src.pdf_parser import PDFParser
 from src.context_builder import ContextBuilder
 from src.logger import get_logger, configure_logging
-from src.models import KEEP_PDFS
+from src.models import ARXIV_DB_PATH, KEEP_PDFS
 from src.devtools.link_extractor import LinkExtractor
 from src.devtools.reproducibility_scorer import ReproducibilityScorer
+from src.workflows.db import DatabaseClient
+from src.workflows.explainer import Explainer
+from src.workflows.reading_list import ReadingListManager
+from src.workflows.topic_watcher import TopicWatcher
 from src.devtools.implementation_differ import ImplementationDiffer
 from src.intelligence.citation_graph import SemanticScholarClient
 from src.intelligence.contribution_extractor import ContributionExtractor
@@ -46,6 +51,9 @@ log = get_logger("mcp_server")
 _arxiv_client = ArxivClient()
 _pdf_parser = PDFParser()
 _context_builder = ContextBuilder()
+_db = DatabaseClient(ARXIV_DB_PATH)
+
+atexit.register(lambda: _db.close())
 
 # ── MCP Server ────────────────────────────────────────────────────────────────
 server = Server("arxiv-mcp")
@@ -289,6 +297,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[types.TextCont
             return await _handle_reproducibility_score(arguments)
         elif name == "arxiv_diff_implementations":
             return await _handle_diff_implementations(arguments)
+        elif name == "arxiv_reading_list":
+            return await _handle_reading_list(arguments)
+        elif name == "arxiv_watch_topic":
+            return await _handle_watch_topic(arguments)
+        elif name == "arxiv_explain_for_audience":
+            return await _handle_explain_for_audience(arguments)
         else:
             raise ValueError(f"Unknown tool: {name}")
 
@@ -299,6 +313,66 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[types.TextCont
             indent=2,
         )
         return [types.TextContent(type="text", text=error_payload)]
+
+
+async def _handle_reading_list(args: dict[str, Any]) -> list[types.TextContent]:
+    action = args.get("action")
+    if not action:
+        return [types.TextContent(type="text", text=json.dumps({"error": "action required"}))]
+
+    manager = ReadingListManager(_db, _arxiv_client)
+    params = {k: v for k, v in args.items() if k != "action"}
+
+    result = await manager.dispatch(action, **params)
+    return [
+        types.TextContent(
+            type="text",
+            text=json.dumps(result.model_dump(), indent=2, default=str),
+        )
+    ]
+
+
+async def _handle_watch_topic(args: dict[str, Any]) -> list[types.TextContent]:
+    action = args.get("action")
+    if not action:
+        return [types.TextContent(type="text", text=json.dumps({"error": "action required"}))]
+
+    watcher = TopicWatcher(_db, _arxiv_client)
+    params = {k: v for k, v in args.items() if k != "action"}
+
+    result = await watcher.dispatch(action, **params)
+    return [
+        types.TextContent(
+            type="text",
+            text=json.dumps(result.model_dump(), indent=2, default=str),
+        )
+    ]
+
+
+async def _handle_explain_for_audience(args: dict[str, Any]) -> list[types.TextContent]:
+    arxiv_id = args.get("arxiv_id", "").strip()
+    audience = args.get("audience", "").strip()
+    focus = args.get("focus", "full").strip()
+    force_refresh = bool(args.get("force_refresh", False))
+
+    if not arxiv_id or not audience:
+        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id and audience required"}))]
+
+    explainer = Explainer(_db, ContributionExtractor(), _arxiv_client)
+
+    explanation = await explainer.explain(
+        arxiv_id=arxiv_id,
+        audience=audience,
+        focus=focus,
+        force_refresh=force_refresh,
+    )
+
+    return [
+        types.TextContent(
+            type="text",
+            text=json.dumps(explanation.model_dump(), indent=2, default=str),
+        )
+    ]
 
 
 async def _handle_citation_graph(args: dict[str, Any]) -> list[types.TextContent]:
