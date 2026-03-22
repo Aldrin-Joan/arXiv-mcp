@@ -262,6 +262,51 @@ async def list_tools() -> list[types.Tool]:
                 "required": ["arxiv_id", "github_url"],
             },
         ),
+        types.Tool(
+            name="arxiv_reading_list",
+            description="CRUD reading list operations (add, list, stats, update, remove).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["add", "list", "stats", "get", "update", "remove"]},
+                    "arxiv_id": {"type": "string"},
+                    "tags": {"type": "array", "items": {"type": "string"}},
+                    "notes": {"type": "string"},
+                    "read_status": {"type": "string", "enum": ["unread", "reading", "read"]},
+                    "filter_status": {"type": "string", "enum": ["unread", "reading", "read"]},
+                    "limit": {"type": "integer"},
+                },
+                "required": ["action"],
+            },
+        ),
+        types.Tool(
+            name="arxiv_watch_topic",
+            description="Manage watched topics and check for new papers.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["add", "remove", "list", "check", "check_all"]},
+                    "query": {"type": "string"},
+                    "label": {"type": "string"},
+                    "topic_id": {"type": "integer"},
+                },
+                "required": ["action"],
+            },
+        ),
+        types.Tool(
+            name="arxiv_explain_for_audience",
+            description="Generate audience-targeted explanation for a paper (LLM + fallback).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "arxiv_id": {"type": "string"},
+                    "audience": {"type": "string", "enum": ["layperson", "undergrad", "practitioner", "researcher", "executive"]},
+                    "focus": {"type": "string", "enum": ["full", "abstract_only", "contributions_only"], "default": "full"},
+                    "force_refresh": {"type": "boolean", "default": False},
+                },
+                "required": ["arxiv_id", "audience"],
+            },
+        ),
     ]
 
 
