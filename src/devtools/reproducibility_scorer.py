@@ -1,9 +1,34 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import json
 import re
 from datetime import datetime, timedelta
+
+
+def _run_sync(coro_or_func):
+    if asyncio.iscoroutine(coro_or_func):
+        coro = coro_or_func
+    elif callable(coro_or_func):
+        result = coro_or_func()
+        if asyncio.iscoroutine(result):
+            coro = result
+        else:
+            return result
+    else:
+        raise TypeError("_run_sync expects a coroutine or callable returning a coroutine")
+
+    try:
+        asyncio.get_running_loop()
+
+        def _runner():
+            return asyncio.run(coro)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            return executor.submit(_runner).result()
+    except RuntimeError:
+        return asyncio.run(coro)
 from pathlib import Path
 from typing import Dict
 from urllib.parse import urlparse
@@ -380,10 +405,8 @@ class ReproducibilityScorer:
                     "Repro cache load failed", path=str(cache_path), error=str(exc)
                 )
 
-        code_links = asyncio.run(
-            LinkExtractor().extract(arxiv_id, force_refresh=force_refresh)
-        )
-        text = asyncio.run(self._fetch_pdf_text(arxiv_id))
+        code_links = _run_sync(lambda: LinkExtractor().extract(arxiv_id, force_refresh=force_refresh))
+        text = _run_sync(lambda: self._fetch_pdf_text(arxiv_id))
 
         signals = [
             self._signal_code_repo(code_links),

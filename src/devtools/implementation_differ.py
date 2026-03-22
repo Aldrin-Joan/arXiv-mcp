@@ -1,9 +1,34 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import json
 import re
 from datetime import datetime, timedelta
+
+
+def _run_sync(coro_or_func):
+    if asyncio.iscoroutine(coro_or_func):
+        coro = coro_or_func
+    elif callable(coro_or_func):
+        result = coro_or_func()
+        if asyncio.iscoroutine(result):
+            coro = result
+        else:
+            return result
+    else:
+        raise TypeError("_run_sync expects a coroutine or callable returning a coroutine")
+
+    try:
+        asyncio.get_running_loop()
+
+        def _runner():
+            return asyncio.run(coro)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            return executor.submit(_runner).result()
+    except RuntimeError:
+        return asyncio.run(coro)
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -333,7 +358,7 @@ class ImplementationDiffer:
 
     def _call_llm(self, prompt: str) -> str:
         try:
-            return asyncio.run(ContributionExtractor()._call_ollama(prompt))
+            return _run_sync(ContributionExtractor()._call_ollama(prompt))
         except Exception as exc:
             log.warning("LLM unavailable", error=str(exc))
             return "LLM unavailable"
@@ -381,14 +406,12 @@ class ImplementationDiffer:
             except Exception:
                 pass
 
-        contributions = asyncio.run(
-            ContributionExtractor().extract(arxiv_id, force_refresh=force_refresh)
-        )
-        paper = asyncio.run(self._fetch_paper(arxiv_id))
+        contributions = _run_sync(lambda: ContributionExtractor().extract(arxiv_id, force_refresh=force_refresh))
+        paper = _run_sync(lambda: self._fetch_paper(arxiv_id))
 
         method_text = self._extract_method_section(paper)
 
-        repo_summary = asyncio.run(fetcher.fetch_repo_summary(github_url))
+        repo_summary = _run_sync(fetcher.fetch_repo_summary(github_url))
         code_content, total_tokens = self._build_code_content(
             repo_summary.get("files", {})
         )

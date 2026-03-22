@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import asyncio
+import concurrent.futures
 
 from sentence_transformers import SentenceTransformer
 
@@ -63,6 +65,29 @@ class SemanticIndex:
             log.info("Loaded embedding model", model=EMBEDDING_MODEL)
         return self._model
 
+    def _run_sync(self, coro_or_func):
+        if asyncio.iscoroutine(coro_or_func):
+            coro = coro_or_func
+        elif callable(coro_or_func):
+            result = coro_or_func()
+            if asyncio.iscoroutine(result):
+                coro = result
+            else:
+                return result
+        else:
+            raise TypeError("_run_sync expects a coroutine or callable returning a coroutine")
+
+        try:
+            asyncio.get_running_loop()
+
+            def _runner():
+                return asyncio.run(coro)
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                return executor.submit(_runner).result()
+        except RuntimeError:
+            return asyncio.run(coro)
+
     def _get_collection(self):
         self._initialize_chroma()
         if self._collection is None:
@@ -88,9 +113,10 @@ class SemanticIndex:
 
         metadata = {
             "title": title,
-            "year": year,
             "abstract_preview": abstract[:300],
         }
+        if year is not None:
+            metadata["year"] = year
 
         collection.upsert(
             ids=[arxiv_id],
@@ -153,14 +179,12 @@ class SemanticIndex:
                 emb2 = item2["embeddings"][0]
                 return emb2
 
-            import asyncio
-
-            emb = asyncio.get_event_loop().run_until_complete(_build_and_query())
+            emb = self._run_sync(_build_and_query)
 
         query_results = collection.query(
             query_embeddings=[emb],
             n_results=top_k + 1,
-            include=["metadatas", "distances", "documents", "ids"],
+            include=["metadatas", "distances", "documents"],
         )
 
         out_records = []
@@ -193,7 +217,7 @@ class SemanticIndex:
         query_results = collection.query(
             query_embeddings=[embedding],
             n_results=top_k,
-            include=["metadatas", "distances", "documents", "ids"],
+            include=["metadatas", "distances", "documents"],
         )
 
         records = []

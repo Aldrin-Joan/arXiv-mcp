@@ -4,7 +4,8 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir "numpy<2.0.0" && \
+    pip install --no-cache-dir .
 
 ENV ARXIV_KEEP_PDFS=false
 ENV ARXIV_DOWNLOAD_DIR=/tmp/arxiv_mcp_downloads

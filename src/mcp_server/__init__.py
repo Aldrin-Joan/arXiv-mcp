@@ -507,12 +507,19 @@ async def _handle_get_paper_by_id(args: dict) -> list[types.TextContent]:
     else:
         payload = metadata.model_dump()
 
-    # Non-blocking semantic index side effect
+    # Non-blocking semantic index side effect.
+    # add_paper is synchronous, so run in thread to avoid event-loop mismatch.
     try:
         import asyncio
 
         asyncio.create_task(
-            SemanticIndex().add_paper(arxiv_id, metadata.title, metadata.abstract, None)
+            asyncio.to_thread(
+                SemanticIndex().add_paper,
+                arxiv_id,
+                metadata.title,
+                metadata.abstract,
+                None,
+            )
         )
     except Exception as exc:
         log.warning("Semantic index side effect failed", arxiv_id=arxiv_id, error=str(exc))
@@ -545,12 +552,19 @@ async def _handle_extract_text(args: dict) -> list[types.TextContent]:
 
     extracted = _pdf_parser.parse(dl_result.local_path, arxiv_id)
 
-    # Non-blocking side effect: index to semantic index
+    # Non-blocking semantic index side effect.
+    # add_paper is synchronous, so run in thread to avoid event-loop mismatch.
     try:
         import asyncio
 
         asyncio.create_task(
-            SemanticIndex().add_paper(arxiv_id, extracted.title, extracted.full_text, None)
+            asyncio.to_thread(
+                SemanticIndex().add_paper,
+                arxiv_id,
+                extracted.title,
+                extracted.full_text,
+                None,
+            )
         )
     except Exception as exc:
         log.warning("Semantic index side effect failed", arxiv_id=arxiv_id, error=str(exc))

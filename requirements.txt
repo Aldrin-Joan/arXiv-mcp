@@ -15,3 +15,4 @@ sentence-transformers==2.7.0
 chromadb==0.5.0
 # optional: local LLM backend
 ollama==0.2.0
+numpy

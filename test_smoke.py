@@ -173,18 +173,18 @@ async def run():
 
     db2 = DatabaseClient(":memory:")
     rl_mgr = ReadingListManager(db2, DummyArxivClientForReading())
-    asyncio.run(rl_mgr.add("1706.03762", tags=["NLP"], notes="note"))
-    result_list = asyncio.run(rl_mgr.list())
+    await rl_mgr.add("1706.03762", tags=["NLP"], notes="note")
+    result_list = await rl_mgr.list()
     assert len(result_list.entries) >= 1
-    asyncio.run(rl_mgr.update("1706.03762", read_status="read"))
-    stats = asyncio.run(rl_mgr.stats())
+    await rl_mgr.update("1706.03762", read_status="read")
+    stats = await rl_mgr.stats()
     assert stats.stats["read"] == 1
 
     tw = TopicWatcher(db2, DummyArxivClientForReading())
-    asyncio.run(tw.add("cat:cs.AI", "AI"))
-    check_res1 = asyncio.run(tw.check())
+    await tw.add("cat:cs.AI", "AI")
+    check_res1 = await tw.check()
     assert check_res1.check_results[0].baseline_established
-    check_res2 = asyncio.run(tw.check())
+    check_res2 = await tw.check()
     assert not check_res2.check_results[0].baseline_established
 
     explainer = Explainer(
@@ -204,7 +204,7 @@ async def run():
         )
 
     explainer._call_ollama = fake_ollama
-    explanation = asyncio.run(explainer.explain("1706.03762", "practitioner"))
+    explanation = await explainer.explain("1706.03762", "practitioner")
     assert explanation.generation_method in {"llm", "passthrough"}
 
     print("  ✓ Layer 4 workflow smoke checks passed")

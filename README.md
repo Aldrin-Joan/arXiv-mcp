@@ -113,6 +113,15 @@ print(context.summary)
 
 ---
 
+## Architecture Layers
+
+| Layer | Features |
+|---|---|
+| **Layer 1 — retrieval** *(both tools have this)* | Search · PDF fetch + cache · Text extraction + chunking |
+| **Layer 2 — intelligence** *(your opportunity)* | Citation graph · Concept extraction · Cross-paper synthesis |
+| **Layer 3 — dev tooling** *(highly unique)* | Code + dataset links · Implementation diff · Reproducibility audit |
+| **Layer 4 — research workflows** *(unique)* | Reading lists · Topic tracking + alerts · Agent-ready Q&A |
+
 ## MCP Server
 
 `src/mcp_server/__main__.py` starts an MCP tool server exposing:

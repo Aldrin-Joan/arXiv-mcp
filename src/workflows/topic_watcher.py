@@ -84,6 +84,28 @@ class TopicWatcher:
         )
         existing_ids = {row["arxiv_id"] for row in existing_rows}
 
+        # Convert SearchResult to PaperMetadata-like dict for model compatibility
+        from src.models import PaperMetadata, Author
+
+        def to_metadata(paper):
+            if isinstance(paper, PaperMetadata):
+                return paper
+            # fallback from SearchResult
+            return PaperMetadata(
+                arxiv_id=paper.arxiv_id,
+                title=getattr(paper, "title", ""),
+                authors=[Author(name=a) for a in getattr(paper, "authors", [])],
+                abstract=getattr(paper, "abstract_snippet", ""),
+                categories=getattr(paper, "categories", []),
+                primary_category=(getattr(paper, "categories", [""])[0] if getattr(paper, "categories", []) else ""),
+                published=getattr(paper, "published", ""),
+                updated=getattr(paper, "published", ""),
+                pdf_url=getattr(paper, "pdf_url", ""),
+                entry_url=f"https://arxiv.org/abs/{paper.arxiv_id}",
+            )
+
+        papers = [to_metadata(p) for p in papers]
+
         if topic.last_checked is None:
             for p in papers:
                 self.db.execute(

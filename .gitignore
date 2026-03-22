@@ -2,19 +2,19 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.pytest_cache
 # Virtual environments
 .venv/
 venv/
 env/
 ENV/
-
+.ruff_cache
 # Distribution / packaging
 build/
 dist/
 *.egg-info/
 .eggs/
-
+output.txt
 # PyPack
 pip-wheel-metadata/
 
@@ -45,6 +45,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 .coverage
 # other
+scripts
 *.bak
 *.swp
 tests/
