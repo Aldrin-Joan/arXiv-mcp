@@ -354,10 +354,20 @@ class SimilarityResults(BaseModel):
 S2_API_KEY: str = os.getenv("S2_API_KEY", "")
 OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "mistral")
-SEMANTIC_INDEX_DIR: Path = Path(os.getenv("SEMANTIC_INDEX_DIR", str(DOWNLOAD_DIR / "semantic_index"))).expanduser().resolve()
-CITATION_CACHE_TTL: int = int(os.getenv("CITATION_CACHE_TTL", str(86400)))  # 24h in seconds
-CONTRIBUTION_CACHE_TTL: int = int(os.getenv("CONTRIBUTION_CACHE_TTL", str(604800)))  # 7d
-EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+SEMANTIC_INDEX_DIR: Path = (
+    Path(os.getenv("SEMANTIC_INDEX_DIR", str(DOWNLOAD_DIR / "semantic_index")))
+    .expanduser()
+    .resolve()
+)
+CITATION_CACHE_TTL: int = int(
+    os.getenv("CITATION_CACHE_TTL", str(86400))
+)  # 24h in seconds
+CONTRIBUTION_CACHE_TTL: int = int(
+    os.getenv("CONTRIBUTION_CACHE_TTL", str(604800))
+)  # 7d
+EMBEDDING_MODEL: str = os.getenv(
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+)
 
 # Layer 3 environment variables
 GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
@@ -366,4 +376,3 @@ REPRO_CACHE_TTL: int = int(os.getenv("REPRO_CACHE_TTL", str(7 * 24 * 3600)))  # 
 DIFF_CACHE_TTL: int = int(os.getenv("DIFF_CACHE_TTL", str(24 * 3600)))  # seconds
 GITHUB_MAX_FILES: int = int(os.getenv("GITHUB_MAX_FILES", "25"))
 GITHUB_MAX_FILE_SIZE_KB: int = int(os.getenv("GITHUB_MAX_FILE_SIZE_KB", "50"))
-

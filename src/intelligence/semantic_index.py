@@ -75,7 +75,9 @@ class SemanticIndex:
             else:
                 return result
         else:
-            raise TypeError("_run_sync expects a coroutine or callable returning a coroutine")
+            raise TypeError(
+                "_run_sync expects a coroutine or callable returning a coroutine"
+            )
 
         try:
             asyncio.get_running_loop()

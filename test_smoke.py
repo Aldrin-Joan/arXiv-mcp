@@ -120,7 +120,9 @@ async def run():
     from src.devtools.reproducibility_scorer import ReproducibilityScorer
 
     score_report = ReproducibilityScorer().score("1706.03762", force_refresh=False)
-    print(f"  [OK] Reproducibility score {score_report.score}, band={score_report.band}")
+    print(
+        f"  [OK] Reproducibility score {score_report.score}, band={score_report.band}"
+    )
     if score_report.score <= 5.0:
         print(
             "  [WARN] Score <= 5.0; expected > 5.0 for this paper but may vary with environment"
@@ -227,9 +229,13 @@ async def run():
         raise RuntimeError("Ollama unavailable")
 
     explainer_baseline._call_ollama = fake_ollama_fail
-    explanation_fallback = await explainer_baseline.explain("1706.03762", "practitioner")
+    explanation_fallback = await explainer_baseline.explain(
+        "1706.03762", "practitioner"
+    )
     assert explanation_fallback.generation_method == "passthrough"
-    assert explanation_fallback.what_it_is == "Sentence one. Sentence two. Sentence three."
+    assert (
+        explanation_fallback.what_it_is == "Sentence one. Sentence two. Sentence three."
+    )
     assert explanation_fallback.problem_solved == "Sentence one."
     assert explanation_fallback.how_it_works == "See abstract."
     assert explanation_fallback.why_it_matters == "See abstract."

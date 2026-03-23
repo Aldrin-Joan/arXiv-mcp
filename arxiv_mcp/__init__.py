@@ -10,6 +10,7 @@ from src.pdf_fetcher import *
 from src.pdf_parser import *
 from src.context_builder import *
 from src.mcp_server import *
+import src as src
 
 __all__ = [
     "entrypoint",

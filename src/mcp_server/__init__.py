@@ -268,12 +268,21 @@ async def list_tools() -> list[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "action": {"type": "string", "enum": ["add", "list", "stats", "get", "update", "remove"]},
+                    "action": {
+                        "type": "string",
+                        "enum": ["add", "list", "stats", "get", "update", "remove"],
+                    },
                     "arxiv_id": {"type": "string"},
                     "tags": {"type": "array", "items": {"type": "string"}},
                     "notes": {"type": "string"},
-                    "read_status": {"type": "string", "enum": ["unread", "reading", "read"]},
-                    "filter_status": {"type": "string", "enum": ["unread", "reading", "read"]},
+                    "read_status": {
+                        "type": "string",
+                        "enum": ["unread", "reading", "read"],
+                    },
+                    "filter_status": {
+                        "type": "string",
+                        "enum": ["unread", "reading", "read"],
+                    },
                     "limit": {"type": "integer"},
                 },
                 "required": ["action"],
@@ -285,7 +294,10 @@ async def list_tools() -> list[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "action": {"type": "string", "enum": ["add", "remove", "list", "check", "check_all"]},
+                    "action": {
+                        "type": "string",
+                        "enum": ["add", "remove", "list", "check", "check_all"],
+                    },
                     "query": {"type": "string"},
                     "label": {"type": "string"},
                     "topic_id": {"type": "integer"},
@@ -300,8 +312,21 @@ async def list_tools() -> list[types.Tool]:
                 "type": "object",
                 "properties": {
                     "arxiv_id": {"type": "string"},
-                    "audience": {"type": "string", "enum": ["layperson", "undergrad", "practitioner", "researcher", "executive"]},
-                    "focus": {"type": "string", "enum": ["full", "abstract_only", "contributions_only"], "default": "full"},
+                    "audience": {
+                        "type": "string",
+                        "enum": [
+                            "layperson",
+                            "undergrad",
+                            "practitioner",
+                            "researcher",
+                            "executive",
+                        ],
+                    },
+                    "focus": {
+                        "type": "string",
+                        "enum": ["full", "abstract_only", "contributions_only"],
+                        "default": "full",
+                    },
                     "force_refresh": {"type": "boolean", "default": False},
                 },
                 "required": ["arxiv_id", "audience"],
@@ -363,7 +388,11 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[types.TextCont
 async def _handle_reading_list(args: dict[str, Any]) -> list[types.TextContent]:
     action = args.get("action")
     if not action:
-        return [types.TextContent(type="text", text=json.dumps({"error": "action required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "action required"})
+            )
+        ]
 
     manager = ReadingListManager(_db, _arxiv_client)
     params = {k: v for k, v in args.items() if k != "action"}
@@ -380,7 +409,11 @@ async def _handle_reading_list(args: dict[str, Any]) -> list[types.TextContent]:
 async def _handle_watch_topic(args: dict[str, Any]) -> list[types.TextContent]:
     action = args.get("action")
     if not action:
-        return [types.TextContent(type="text", text=json.dumps({"error": "action required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "action required"})
+            )
+        ]
 
     watcher = TopicWatcher(_db, _arxiv_client)
     params = {k: v for k, v in args.items() if k != "action"}
@@ -401,7 +434,12 @@ async def _handle_explain_for_audience(args: dict[str, Any]) -> list[types.TextC
     force_refresh = bool(args.get("force_refresh", False))
 
     if not arxiv_id or not audience:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id and audience required"}))]
+        return [
+            types.TextContent(
+                type="text",
+                text=json.dumps({"error": "arxiv_id and audience required"}),
+            )
+        ]
 
     explainer = Explainer(_db, ContributionExtractor(), _arxiv_client)
 
@@ -423,7 +461,11 @@ async def _handle_explain_for_audience(args: dict[str, Any]) -> list[types.TextC
 async def _handle_citation_graph(args: dict[str, Any]) -> list[types.TextContent]:
     arxiv_id = args.get("arxiv_id", "").strip()
     if not arxiv_id:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "arxiv_id required"})
+            )
+        ]
 
     async with SemanticScholarClient() as client:
         graph = await client.get_citation_graph(
@@ -433,40 +475,78 @@ async def _handle_citation_graph(args: dict[str, Any]) -> list[types.TextContent
             influential_only=bool(args.get("influential_only", False)),
         )
 
-    return [types.TextContent(type="text", text=json.dumps(graph.model_dump(), indent=2, default=str))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(graph.model_dump(), indent=2, default=str)
+        )
+    ]
 
 
-async def _handle_extract_contributions(args: dict[str, Any]) -> list[types.TextContent]:
+async def _handle_extract_contributions(
+    args: dict[str, Any],
+) -> list[types.TextContent]:
     arxiv_id = args.get("arxiv_id", "").strip()
     if not arxiv_id:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "arxiv_id required"})
+            )
+        ]
 
     extractor = ContributionExtractor()
-    contributions = await extractor.extract(arxiv_id, force_refresh=bool(args.get("force_refresh", False)))
+    contributions = await extractor.extract(
+        arxiv_id, force_refresh=bool(args.get("force_refresh", False))
+    )
 
-    return [types.TextContent(type="text", text=json.dumps(contributions.model_dump(), indent=2))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(contributions.model_dump(), indent=2)
+        )
+    ]
 
 
 async def _handle_extract_code_links(args: dict[str, Any]) -> list[types.TextContent]:
     arxiv_id = args.get("arxiv_id", "").strip()
     if not arxiv_id:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "arxiv_id required"})
+            )
+        ]
 
     extractor = LinkExtractor()
-    code_links = await extractor.extract(arxiv_id, force_refresh=bool(args.get("force_refresh", False)))
+    code_links = await extractor.extract(
+        arxiv_id, force_refresh=bool(args.get("force_refresh", False))
+    )
 
-    return [types.TextContent(type="text", text=json.dumps(code_links.model_dump(), indent=2, default=str))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(code_links.model_dump(), indent=2, default=str)
+        )
+    ]
 
 
-async def _handle_reproducibility_score(args: dict[str, Any]) -> list[types.TextContent]:
+async def _handle_reproducibility_score(
+    args: dict[str, Any],
+) -> list[types.TextContent]:
     arxiv_id = args.get("arxiv_id", "").strip()
     if not arxiv_id:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "arxiv_id required"})
+            )
+        ]
 
     scorer = ReproducibilityScorer()
-    report = scorer.score(arxiv_id, force_refresh=bool(args.get("force_refresh", False)))
+    report = scorer.score(
+        arxiv_id, force_refresh=bool(args.get("force_refresh", False))
+    )
 
-    return [types.TextContent(type="text", text=json.dumps(report.model_dump(), indent=2, default=str))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(report.model_dump(), indent=2, default=str)
+        )
+    ]
 
 
 async def _handle_diff_implementations(args: dict[str, Any]) -> list[types.TextContent]:
@@ -474,20 +554,38 @@ async def _handle_diff_implementations(args: dict[str, Any]) -> list[types.TextC
     github_url = args.get("github_url", "").strip()
 
     if not arxiv_id:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_id required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "arxiv_id required"})
+            )
+        ]
     if not github_url:
-        return [types.TextContent(type="text", text=json.dumps({"error": "github_url required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "github_url required"})
+            )
+        ]
 
     differ = ImplementationDiffer()
-    diff = differ.diff(arxiv_id, github_url, force_refresh=bool(args.get("force_refresh", False)))
+    diff = differ.diff(
+        arxiv_id, github_url, force_refresh=bool(args.get("force_refresh", False))
+    )
 
-    return [types.TextContent(type="text", text=json.dumps(diff.model_dump(), indent=2, default=str))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(diff.model_dump(), indent=2, default=str)
+        )
+    ]
 
 
 async def _handle_compare_papers(args: dict[str, Any]) -> list[types.TextContent]:
     arxiv_ids = args.get("arxiv_ids") or []
     if not isinstance(arxiv_ids, list) or not arxiv_ids:
-        return [types.TextContent(type="text", text=json.dumps({"error": "arxiv_ids required"}))]
+        return [
+            types.TextContent(
+                type="text", text=json.dumps({"error": "arxiv_ids required"})
+            )
+        ]
 
     extractor = ContributionExtractor()
     comparator = PaperComparator(extractor)
@@ -497,7 +595,11 @@ async def _handle_compare_papers(args: dict[str, Any]) -> list[types.TextContent
     except Exception as exc:
         return [types.TextContent(type="text", text=json.dumps({"error": str(exc)}))]
 
-    return [types.TextContent(type="text", text=json.dumps(report.model_dump(), indent=2, default=str))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(report.model_dump(), indent=2, default=str)
+        )
+    ]
 
 
 async def _handle_find_related(args: dict[str, Any]) -> list[types.TextContent]:
@@ -506,7 +608,12 @@ async def _handle_find_related(args: dict[str, Any]) -> list[types.TextContent]:
     top_k = int(args.get("top_k", 10))
 
     if not query_arxiv_id and not query_text:
-        return [types.TextContent(type="text", text=json.dumps({"error": "query_arxiv_id or query_text required"}))]
+        return [
+            types.TextContent(
+                type="text",
+                text=json.dumps({"error": "query_arxiv_id or query_text required"}),
+            )
+        ]
 
     index = SemanticIndex()
 
@@ -518,7 +625,11 @@ async def _handle_find_related(args: dict[str, Any]) -> list[types.TextContent]:
     except Exception as exc:
         return [types.TextContent(type="text", text=json.dumps({"error": str(exc)}))]
 
-    return [types.TextContent(type="text", text=json.dumps(results.model_dump(), indent=2, default=str))]
+    return [
+        types.TextContent(
+            type="text", text=json.dumps(results.model_dump(), indent=2, default=str)
+        )
+    ]
 
 
 async def _handle_search_arxiv(args: dict) -> list[types.TextContent]:
@@ -567,7 +678,9 @@ async def _handle_get_paper_by_id(args: dict) -> list[types.TextContent]:
             )
         )
     except Exception as exc:
-        log.warning("Semantic index side effect failed", arxiv_id=arxiv_id, error=str(exc))
+        log.warning(
+            "Semantic index side effect failed", arxiv_id=arxiv_id, error=str(exc)
+        )
 
     return [types.TextContent(type="text", text=json.dumps(payload, indent=2))]
 
@@ -612,7 +725,9 @@ async def _handle_extract_text(args: dict) -> list[types.TextContent]:
             )
         )
     except Exception as exc:
-        log.warning("Semantic index side effect failed", arxiv_id=arxiv_id, error=str(exc))
+        log.warning(
+            "Semantic index side effect failed", arxiv_id=arxiv_id, error=str(exc)
+        )
 
     # Remove temporary download if configured to keep PDFs off disk
     if not KEEP_PDFS:

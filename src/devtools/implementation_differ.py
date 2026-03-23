@@ -17,7 +17,9 @@ def _run_sync(coro_or_func):
         else:
             return result
     else:
-        raise TypeError("_run_sync expects a coroutine or callable returning a coroutine")
+        raise TypeError(
+            "_run_sync expects a coroutine or callable returning a coroutine"
+        )
 
     try:
         asyncio.get_running_loop()
@@ -29,6 +31,8 @@ def _run_sync(coro_or_func):
             return executor.submit(_runner).result()
     except RuntimeError:
         return asyncio.run(coro)
+
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -406,7 +410,11 @@ class ImplementationDiffer:
             except Exception:
                 pass
 
-        contributions = _run_sync(lambda: ContributionExtractor().extract(arxiv_id, force_refresh=force_refresh))
+        contributions = _run_sync(
+            lambda: ContributionExtractor().extract(
+                arxiv_id, force_refresh=force_refresh
+            )
+        )
         paper = _run_sync(lambda: self._fetch_paper(arxiv_id))
 
         method_text = self._extract_method_section(paper)

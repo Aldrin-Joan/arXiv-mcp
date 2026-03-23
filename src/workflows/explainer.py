@@ -154,7 +154,11 @@ class Explainer:
     ) -> ExplanationResult:
         abstract_source = (metadata.abstract or "").strip() or "No abstract available."
 
-        sentences = [s.strip() for s in re.split(r"(?<=[\.\!?])\s+", abstract_source) if s.strip()]
+        sentences = [
+            s.strip()
+            for s in re.split(r"(?<=[\.\!?])\s+", abstract_source)
+            if s.strip()
+        ]
         first_sentence = sentences[0] if sentences else abstract_source
         last_sentence = sentences[-1] if sentences else abstract_source
 

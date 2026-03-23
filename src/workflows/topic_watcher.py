@@ -107,7 +107,11 @@ class TopicWatcher:
                 authors=[Author(name=a) for a in getattr(paper, "authors", [])],
                 abstract=getattr(paper, "abstract_snippet", ""),
                 categories=getattr(paper, "categories", []),
-                primary_category=(getattr(paper, "categories", [""])[0] if getattr(paper, "categories", []) else ""),
+                primary_category=(
+                    getattr(paper, "categories", [""])[0]
+                    if getattr(paper, "categories", [])
+                    else ""
+                ),
                 published=getattr(paper, "published", ""),
                 updated=getattr(paper, "published", ""),
                 pdf_url=getattr(paper, "pdf_url", ""),

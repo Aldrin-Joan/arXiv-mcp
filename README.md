@@ -1,10 +1,10 @@
-# arXiv MCP (Model Context Protocol)
+# paperstack (Model Context Protocol)
 
-[![PyPI version](https://img.shields.io/pypi/v/paperstack)](https://pypi.org/project/paperstack/) [![Python versions](https://img.shields.io/pypi/pyversions/paperstack)](https://pypi.org/project/paperstack/) [![License](https://img.shields.io/pypi/l/paperstack)](https://pypi.org/project/paperstack/)
+[![PyPI version](https://img.shields.io/pypi/v/paperstack-mcp)](https://pypi.org/project/paperstack-mcp/) [![Python versions](https://img.shields.io/pypi/pyversions/paperstack-mcp)](https://pypi.org/project/paperstack-mcp/) [![License](https://img.shields.io/pypi/l/paperstack-mcp)](https://pypi.org/project/paperstack-mcp/)
 
 ## Overview
 
-`arxiv-mcp` is a production-grade Model Context Protocol (MCP) server focused on arXiv research retrieval.
+`paperstack` is a production-grade Model Context Protocol (MCP) server focused on arXiv research retrieval.
 It provides:
 
 - arXiv Atom API search by ID/query
@@ -35,8 +35,8 @@ It provides:
 ### 1. Clone repository
 
 ```bash
-git clone https://github.com/blazickjp/arxiv-mcp-server.git
-cd arxiv-mcp
+git clone https://github.com/Aldrin-Joan/paperstack.git
+cd paperstack
 ```
 
 ### 2. Set up Python environment (recommended)
@@ -74,7 +74,7 @@ pip install -e .
 From PyPI:
 
 ```bash
-pip install paperstack
+pip install paperstack-mcp
 ```
 
 ---
@@ -84,7 +84,7 @@ pip install paperstack
 ### CLI
 
 ```bash
-arxiv-mcp --help
+paperstack --help
 ```
 
 Run server locally:
@@ -96,6 +96,7 @@ python -m src.mcp_server
 ### Python API
 
 ```python
+from paperstack_mcp import entrypoint  # import alias for the package
 from src.arxiv_client import ArxivClient
 from src.pdf_fetcher import PdfFetcher
 from src.pdf_parser import PdfParser

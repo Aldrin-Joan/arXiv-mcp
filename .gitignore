@@ -16,6 +16,7 @@ dist/
 .eggs/
 output.txt
 .env
+note.txt
 # PyPack
 pip-wheel-metadata/
 alltools_output.txt
