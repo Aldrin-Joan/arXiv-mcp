@@ -170,6 +170,44 @@ In VS Code, add an MCP server entry to your workspace settings (e.g., `.vscode/s
 }
 ```
 
+### MCP JSON entry for `paperstack-mcp`
+
+If you installed from PyPI (`pip install paperstack-mcp`), the MCP server command can be the package executable instead of a direct Python module path. In `.vscode/mcp.json` or your `.code-workspace` settings, use an entry like:
+
+```json
+{
+  "servers": {
+    "paperstack-mcp": {
+      "command": "paperstack-mcp",
+      "args": [],
+      "cwd": "C:\\path\\to\\your\\project",
+      "env": {
+        "PYTHONPATH": "C:\\path\\to\\your\\project",
+        "ARXIV_DOWNLOAD_DIR": "C:\\path\\to\\your\\project\\downloads",
+        "ARXIV_KEEP_PDFS": "false",
+        "CHUNK_SIZE_TOKENS": "800",
+        "CHUNK_OVERLAP_TOKENS": "100",
+        "ARXIV_RATE_LIMIT_DELAY": "3.0",
+        "MAX_RETRIES": "3",
+        "HTTP_TIMEOUT": "60"
+      }
+    }
+  }
+}
+```
+
+Adjust values for your local path, rate limit, and retry/timeouts.
+
+- Run `pip install paperstack-mcp` first.
+- Ensure workspace `cwd` and `PYTHONPATH` point to the project root.
+- Customize `ARXIV_DOWNLOAD_DIR` for your downloaded PDF cache location.
+
+Adjust values for your local path, rate limit, and retry/timeouts.
+
+- Run `pip install paperstack-mcp` first.
+- Ensure workspace `cwd` and `PYTHONPATH` point to the project root.
+- Customize `ARXIV_DOWNLOAD_DIR` for your downloaded PDF cache location.
+
 - `ARXIV_DOWNLOAD_DIR`: local storage for downloaded PDFs.
 - `ARXIV_KEEP_PDFS`: keep cached PDFs after parse.
 - `CHUNK_SIZE_TOKENS` / `CHUNK_OVERLAP_TOKENS`: controls text-chunking in context builder.
